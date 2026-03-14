@@ -1,0 +1,109 @@
+import tkinter as tk
+from tkinter import ttk
+import string
+
+
+class CircleGrid(tk.Frame):
+    def __init__(self, parent, n, m, label):
+        super().__init__(parent)
+
+        self.n = n
+        self.m = m
+        self.label = label
+        self.circles = []
+        self.selected_indices = set()
+
+        tk.Label(self, text=label, font=("Arial", 12, "bold")).pack()
+
+        self.grid_frame = tk.Frame(self)
+        self.grid_frame.pack()
+
+        self.create_grid_circle()
+
+    def create_grid_circle(self):
+        for row in range(self.n):
+            for col in range(self.m):
+                index = row * self.m + col
+
+                circle = tk.Canvas(self.grid_frame, width=40, height=40,
+                                   bg='white', highlightthickness=0)
+                circle.grid(row=row, column=col, padx=5, pady=5)
+
+                circle.create_oval(5, 5, 35, 35, fill='grey', tags="circle")
+
+                circle.bind(lambda e, idx=index: self.toggle_select(idx))
+
+                self.circles.append(circle)
+
+    def toggle_select(self, index):
+        circle = self.circles[index]
+
+        if index in self.selected_indices:
+            self.selected_indices.remove(index)
+            circle.itemconfig("circle", fill='grey')
+        else:
+            self.selected_indices.add(index)
+            circle.itemconfig("circle", fill='red')
+
+    def highlight(self, index):
+        self.toggle_select(index)
+
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("Multi Table Circle Grid")
+
+        n = 4
+        m = 5
+        alphabets = list(string.ascii_uppercase[:3])  # Example: A,B,C
+
+        total_per_table = n * m
+
+        main_frame = tk.Frame(self)
+        main_frame.pack(padx=20, pady=20)
+
+        # Treeview
+        self.tree = ttk.Treeview(main_frame, columns=("ID",), show="headings", height=20)
+        self.tree.heading("ID", text="Position ID")
+        self.tree.grid(row=0, column=0, padx=10)
+
+        # Frame for tables
+        table_frame = tk.Frame(main_frame)
+        table_frame.grid(row=0, column=1)
+
+        self.tables = {}
+
+        for col, letter in enumerate(alphabets):
+
+            table = CircleGrid(table_frame, n, m, letter)
+            table.grid(row=0, column=col, padx=20)
+
+            self.tables[letter] = table
+
+            for i in range(total_per_table):
+                item_id = f"{letter}-{i+1:03}"
+                self.tree.insert("", "end", iid=item_id, values=(item_id,))
+
+        self.tree.bind("<<TreeviewSelect>>", self.on_select)
+
+    def on_select(self, event):
+
+        selected = self.tree.selection()
+        if not selected:
+            return
+
+        item = selected[0]
+
+        letter, number = item.split("-")
+        index = int(number) - 1
+
+        table = self.tables[letter]
+
+        table.highlight(index)
+
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
