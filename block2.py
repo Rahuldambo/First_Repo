@@ -9,9 +9,9 @@ class CircleGrid(tk.Frame):
         self.selected_indices = set()
         self.circles = []
         
-        self.create_grid()
+        self.create_grid_circle()
         
-    def create_grid(self):
+    def create_grid_circle(self):
         for row in range(self.n):
             for col in range(self.m):
                 index = row * self.m + col
@@ -24,14 +24,14 @@ class CircleGrid(tk.Frame):
                 circle.create_oval(5, 5, 35, 35, fill='grey', tags="circle")
                 
                 # Bind click event, pass index with default arg trick
-                circle.bind("<Button-1>", lambda e, idx=index: self.toggle_selection(idx))
+                circle.bind("<Button-1>", lambda e, idx=index: self.toggle_select(idx))
                 
                 # Tooltip with item
                 self.create_tooltip(circle, self.items[index])
                 
                 self.circles.append(circle)
                 
-    def toggle_selection(self, index):
+    def toggle_select(self, index):
         circle = self.circles[index]
         if index in self.selected_indices:
             self.selected_indices.remove(index)
