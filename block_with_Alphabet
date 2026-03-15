@@ -46,8 +46,14 @@ class CircleGrid(tk.Frame):
             circle.itemconfig("circle", fill='red')
 
     def highlight(self, index):
-        self.toggle_select(index)
-
+        circle = self.circles[index]
+        circle.itemconfig("circle", fill="red")
+        self.selected_indices.add(index)
+    
+    def clear_all(self):
+        for i, circle in enumerate(self.circles):
+            circle.itemconfig("circle", fill="grey")
+        self.selected_indices.clear()
 
 class App(tk.Tk):
     def __init__(self):
@@ -65,7 +71,7 @@ class App(tk.Tk):
         main_frame.pack(padx=20, pady=20)
 
         # Treeview
-        self.tree = ttk.Treeview(main_frame, columns=("ID",), show="headings", height=20)
+        self.tree = ttk.Treeview(main_frame, columns=("ID",), show="headings", height=20, selectmode="extended")
         self.tree.heading("ID", text="Position ID")
         self.tree.grid(row=0, column=0, padx=10)
 
@@ -90,18 +96,20 @@ class App(tk.Tk):
 
     def on_select(self, event):
 
-        selected = self.tree.selection()
-        if not selected:
-            return
+        selected_items = self.tree.selection()
 
-        item = selected[0]
+        # Clear all highlights first
+        for table in self.tables.values():
+            table.clear_all()
 
-        letter, number = item.split("-")
-        index = int(number) - 1
+        # Highlight every selected item
+        for item in selected_items:
 
-        table = self.tables[letter]
+            letter, number = item.split("-")
+            index = int(number) - 1
 
-        table.highlight(index)
+            table = self.tables[letter]
+            table.highlight(index)
 
 
 if __name__ == "__main__":
